@@ -99,7 +99,8 @@ class BlazarReservationSplitter:
         for event_type in CONF.target_events:
             # Convert event_type format ('lease.event.start_lease') to routing key format
             # Routing key pattern: notifications.info.<event_type>
-            routing_key = f"notifications.info.{event_type}"
+#            routing_key = f"notifications.info.{event_type}"
+            routing_key = event_type  # Just "lease.event.start_lease"
             self.channel.queue_bind(
                 exchange=CONF.exchange,
                 queue=CONF.queue,
