@@ -1,5 +1,5 @@
 # syntax = docker/dockerfile:1
-# This Dockerfile uses multi-stage build to customize DEV and PROD images:
+# This Dockerfile uses multi-stage build to customize DEV and PROD images with SoftHSM2 support:
 # https://docs.docker.com/develop/develop-images/multistage-build/
 
 ARG VENV_TAG=3.12-latest
@@ -60,7 +60,7 @@ LABEL org.opencontainers.image.description="OpenStack Service (barbican) built f
 COPY --from=dependency_build /var/lib/openstack /var/lib/openstack
 RUN export DEBIAN_FRONTEND=noninteractive \
   && apt-get update && apt-get upgrade -y \
-  && apt-get install --no-install-recommends -y libxml2 \
+  && apt-get install --no-install-recommends -y libxml2 softhsm2 \
   && apt-get purge -y --auto-remove -o APT::AutoRemove::RecommendsImportant=false \
   && apt-get clean -y \
   && rm -rf /var/lib/apt/lists/* \
@@ -72,7 +72,9 @@ RUN export DEBIAN_FRONTEND=noninteractive \
   && mkdir -p /var/lib/openstack/etc/barbican \
   && ln -s /var/lib/openstack/etc/barbican /etc/barbican \
   && chown barbican:barbican -h /etc/barbican \
-  && chown -R barbican:barbican /var/lib/openstack/etc/barbican
+  && chown -R barbican:barbican /var/lib/openstack/etc/barbican \
+  && mkdir -p /var/lib/softhsm/tokens /etc/softhsm \
+  && chown -R barbican:barbican /var/lib/softhsm /etc/softhsm
 # Set the environment variables for the barbican venv
 ENV PATH="/var/lib/openstack/bin:$PATH"
 # Set the working directory
